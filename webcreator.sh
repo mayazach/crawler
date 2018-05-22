@@ -31,4 +31,10 @@ then
     exit 1
 fi
 
+if [ $(cat "$2" | wc -l) -lt 10000 ];
+then
+    echo "Text file must have 10000 lines or more"
+    exit 1
+fi
+
 echo "Hello program"
