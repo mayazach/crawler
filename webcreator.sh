@@ -37,4 +37,15 @@ then
     exit 1
 fi
 
+q=`expr $3 / 2 + 1`
+echo "$q"
+
+f=`expr $4 / 2 + 1`
+echo "$f"
+
+for ((i=1; i <= "$3"; i++))
+do
+    mkdir "$1/site$i"
+done
+
 echo "Hello program"
