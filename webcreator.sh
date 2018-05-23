@@ -38,6 +38,11 @@ then
     exit 1
 fi
 
+if [ "$(ls -A websites)" ]; then
+     echo "#Warning: directory is full, purging..."
+     rm -rf websites/*
+fi
+
 q=`expr $3 / 2 + 1`
 
 f=`expr $4 / 2 + 1`
@@ -58,7 +63,8 @@ do
     for ((j=0; j < "$4"; j++))
     do
 	index=`expr $4 \* $i + $j`
-	echo "${filenames[index]}"
+	page=${filenames[index]}
+	touch page
     done
 done
 
