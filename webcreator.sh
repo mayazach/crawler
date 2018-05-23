@@ -1,6 +1,7 @@
 #!/bin/bash
 
 re='^[0-9]+$'
+filenames=()
 
 if [ "$#" != 4 ]; then
 	echo "Need input parameters: root_directory text_file w p"
@@ -38,14 +39,27 @@ then
 fi
 
 q=`expr $3 / 2 + 1`
-echo "$q"
 
 f=`expr $4 / 2 + 1`
-echo "$f"
 
-for ((i=1; i <= "$3"; i++))
+for((i=0; i < $3; i++))
+do
+    random=0
+    for((j=0; j < $4; j++))
+    do
+	random=$(($random + $((1 + RANDOM % 10000))))
+	filenames+=("$1/site$i/page$j_$random.html")
+    done
+done
+
+for ((i=0; i < "$3"; i++))
 do
     mkdir "$1/site$i"
+    for ((j=0; j < "$4"; j++))
+    do
+	index=`expr $4 \* $i + $j`
+	echo "${filenames[index]}"
+    done
 done
 
 echo "Hello program"
