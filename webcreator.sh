@@ -2,6 +2,7 @@
 
 re='^[0-9]+$'
 filenames=()
+lines=()
 
 if [ "$#" != 4 ]; then
 	echo "Need input parameters: root_directory text_file w p"
@@ -43,6 +44,8 @@ if [ "$(ls -A websites)" ]; then
      rm -rf websites/*
 fi
 
+readarray -t lines < $2
+
 q=`expr $3 / 2 + 1`
 
 f=`expr $4 / 2 + 1`
@@ -62,10 +65,15 @@ do
     mkdir "$1/site$i"
     for ((j=0; j < "$4"; j++))
     do
+	lineNum=$(cat "$2" | wc -l)
+	k=$((1 + RANDOM % $(($lineNum - 2000))))
+	m=$((1001 + RANDOM % 1000))
 	index=`expr $4 \* $i + $j`
-	page=${filenames[index]}
-	touch page
+	touch ${filenames[index]}
+	echo "<!DOCTYPE html>" >> ${filenames[index]}
+	echo "<html>" >> ${filenames[index]}
+	echo "    <body>" >> ${filenames[index]}
     done
 done
 
-echo "Hello program"
+echo "#Done"
