@@ -159,11 +159,11 @@ do
 	    if [ $i2 -lt $f ];
 	    then
 		echo "#  Adding link to ${filenames[${farray[i2]}]}"
-		echo "    <a href=\"link$i2\">${filenames[${farray[i2]}]}</a><br>" >> ${filenames[index]}
+		echo "    <a href=\"${filenames[${farray[i2]}]}\">Link $i2</a><br>" >> ${filenames[index]}
 	    else
 		qlink=`expr $i2 - $f`
 		echo "#  Adding link to ${filenames[${qarray[qlink]}]}"
-                echo "    <a href=\"link$i2\">${filenames[${qarray[qlink]}]}</a><br>" >> ${filenames[index]}
+                echo "    <a href=\"${filenames[${qarray[qlink]}]}\">Link $i2</a><br>" >> ${filenames[index]}
 	    fi
 	done
 	echo "    </body>" >> ${filenames[index]}
