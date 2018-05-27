@@ -2,6 +2,7 @@
 
 re='^[0-9]+$'
 filenames=()
+incomingLinks=()
 lines=()
 
 if [ "$#" != 4 ]; then
@@ -57,6 +58,7 @@ do
     do
 	random=$(($random + $((1 + RANDOM % 10000))))
 	filenames+=("$1/site$i/page$j_$random.html")
+	incomingLinks+=(0)
     done
 done
 
@@ -69,6 +71,7 @@ do
     mkdir "$1/site$i"
     for ((j=0; j < "$4"; j++))
     do
+	usedlinks=()
 	farray=()
 	qarray=()
 	fsize=0
@@ -80,22 +83,59 @@ do
 	    if [ $temp != $j ];
 	    then
 		temp=`expr $minlink + $temp`
-		farray+=("$temp")
-		let "fsize=fsize+1"
+		new="true"
+		for ((i2=0; i2<${#usedlinks[*]}; i2++));
+		do
+			if [ $temp == ${usedlinks[i2]} ];
+			then
+				new="false"
+			fi
+		done
+		if [ $new == "true" ];
+		then
+			usedlinks+=("$temp")
+			farray+=("$temp")
+			incomingLinks[temp]=1
+			let "fsize=fsize+1"
+		fi
 	    fi
 	done
 	qsize=0
+	usedlinks=()
         while [ "$qsize" -lt "$q" ]
         do
             temp=$((RANDOM % $fileNum))
+	    new="true"
             if [ $temp -lt $minlink ];
             then
-                qarray+=("$temp")
-                let "qsize=qsize+1"
+		for ((i2=0; i2<${#usedlinks[*]}; i2++));
+                do
+                        if [ $temp == ${usedlinks[i2]} ];
+                        then
+                                new="false"
+                        fi
+                done
+		if [ $new == "true" ];
+                then
+		    usedlinks+=("$temp")
+                    qarray+=("$temp")
+                    let "qsize=qsize+1"
+		fi
 	    elif [ $temp -gt $maxlink ];
 	    then
-                qarray+=("$temp")
-                let "qsize=qsize+1"
+                for ((i2=0; i2<${#usedlinks[*]}; i2++));
+                do
+                        if [ $temp == ${usedlinks[i2]} ];
+                        then
+                                new="false"
+                        fi
+                done
+                if [ $new == "true" ];
+                then
+                    usedlinks+=("$temp")
+                    qarray+=("$temp")
+                    let "qsize=qsize+1"
+                fi
 	    fi
         done
 	k=$((1 + RANDOM % $(($lineNum - 2000))))
@@ -130,5 +170,19 @@ do
 	echo "</html>" >> ${filenames[index]}
     done
 done
+
+complete="true"
+for ((i=0; i<${#incomingLinks[*]}; i++));
+do
+    if [ ${#incomingLinks[*]} == 0 ];
+	then
+		complete="false"
+	fi
+done
+
+if [ $complete == "true" ];
+	then
+		echo "#All pages have at least one incoming link"
+	fi
 
 echo "#Done"
