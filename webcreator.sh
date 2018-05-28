@@ -126,40 +126,54 @@ do
 	done
 	qsize=0
 	usedlinks=()
-        while [ "$qsize" -lt "$q" ]
-        do
-            temp=$((RANDOM % $fileNum))
+    while [ "$qsize" -lt "$q" ]
+    do
+        temp=$((RANDOM % $fileNum))
 	    new="true"
-            if [ $temp -lt $minlink ];
-            then
-		for ((i2=0; i2<${#usedlinks[*]}; i2++));
-                do
-                        if [ $temp == ${usedlinks[i2]} ];
-                        then
-                                new="false"
-                        fi
-                done
-		if [ $new == "true" ];
-                then
-		    usedlinks+=("$temp")
-                    qarray+=("$temp")
-                    let "qsize=qsize+1"
-		fi
+        if [ $temp -lt $minlink ];
+        then
+			for ((i2=0; i2<${#usedlinks[*]}; i2++));
+			do
+				if [ $temp == ${usedlinks[i2]} ];
+				then
+					new="false"
+				fi
+			done
+			if [ $new == "true" ];
+			then
+				usedlinks+=("$temp")
+				qarray+=("$temp")
+				let "qsize=qsize+1"
+			elif [ $3 == 2 ]
+			then
+				if [ $4 == 1 ]
+				then
+					qarray+=("$temp")
+					let "qsize=qsize+1"
+				fi
+			fi
 	    elif [ $temp -gt $maxlink ];
 	    then
-                for ((i2=0; i2<${#usedlinks[*]}; i2++));
-                do
-                        if [ $temp == ${usedlinks[i2]} ];
-                        then
-                                new="false"
-                        fi
-                done
-                if [ $new == "true" ];
+            for ((i2=0; i2<${#usedlinks[*]}; i2++));
+            do
+                if [ $temp == ${usedlinks[i2]} ];
                 then
-                    usedlinks+=("$temp")
-                    qarray+=("$temp")
-                    let "qsize=qsize+1"
+                    new="false"
                 fi
+            done
+            if [ $new == "true" ];
+            then
+                usedlinks+=("$temp")
+                qarray+=("$temp")
+                let "qsize=qsize+1"
+			elif [ $3 == 2 ]
+			then
+				if [ $4 == 1 ]
+				then
+					qarray+=("$temp")
+					let "qsize=qsize+1"
+				fi
+            fi
 	    fi
         done
 	k=$((1 + RANDOM % $(($lineNum - 2000))))
