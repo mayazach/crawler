@@ -28,6 +28,12 @@ then
     exit 1
 fi
 
+if [ $3 == 1 ] ;
+then
+    echo "w can't be 1 - we need external links"
+    exit 1
+fi
+
 if ! [[ "$4" =~ $re ]] ;
 then
     echo "p must be a positive integer"
