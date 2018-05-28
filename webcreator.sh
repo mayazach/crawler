@@ -116,6 +116,12 @@ do
 				incomingLinks[temp]=1
 				let "fsize=fsize+1"
 			fi
+		elif [ $4 == 1 ];
+		then
+			temp=`expr $minlink + $temp`
+			farray+=("$temp")
+			incomingLinks[temp]=1
+			let "fsize=fsize+1"
 		fi
 	done
 	qsize=0
