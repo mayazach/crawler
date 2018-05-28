@@ -81,24 +81,42 @@ do
 	do
 	    temp=$((RANDOM % $4))
 	    if [ $temp != $j ];
-	    then
-		temp=`expr $minlink + $temp`
-		new="true"
-		for ((i2=0; i2<${#usedlinks[*]}; i2++));
-		do
-			if [ $temp == ${usedlinks[i2]} ];
-			then
-				new="false"
-			fi
-		done
-		if [ $new == "true" ];
 		then
-			usedlinks+=("$temp")
-			farray+=("$temp")
-			incomingLinks[temp]=1
-			let "fsize=fsize+1"
+			temp=`expr $minlink + $temp`
+			new="true"
+			for ((i2=0; i2<${#usedlinks[*]}; i2++));
+			do
+				if [ $temp == ${usedlinks[i2]} ];
+				then
+					new="false"
+				fi
+			done
+			if [ $new == "true" ];
+			then
+				usedlinks+=("$temp")
+				farray+=("$temp")
+				incomingLinks[temp]=1
+				let "fsize=fsize+1"
+			fi
+		elif [ $4 == 2 ];
+		then
+			temp=`expr $minlink + $temp`
+			new="true"
+			for ((i2=0; i2<${#usedlinks[*]}; i2++));
+			do
+				if [ $temp == ${usedlinks[i2]} ];
+				then
+					new="false"
+				fi
+			done
+			if [ $new == "true" ];
+			then
+				usedlinks+=("$temp")
+				farray+=("$temp")
+				incomingLinks[temp]=1
+				let "fsize=fsize+1"
+			fi
 		fi
-	    fi
 	done
 	qsize=0
 	usedlinks=()
