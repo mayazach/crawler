@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -133,6 +134,7 @@ int main(int argc,char** argv){
 	
 	
 	while(1){
+		highsock = -1;
 		FD_ZERO(&socks);
 		FD_SET(serving_sock, &socks);
 		if(serving_sock > highsock)
@@ -147,11 +149,14 @@ int main(int argc,char** argv){
 			return 1;
 		}
 		else{
-			if(FD_ISSET(serving_sock, &socks))
-				if ( (csock = accept(command_sock, NULL, NULL)) < 0 ){
+			if(FD_ISSET(serving_sock, &socks)){
+				puts("serving sock");
+				if ( (csock = accept(serving_sock, NULL, NULL)) < 0 ){
 					perror("accept");
 					return 1;
 				}
+				puts("served");
+			}
 			if(FD_ISSET(command_sock,&socks)){
 				if ( (csock = accept(command_sock, NULL, NULL)) < 0 ){
 					perror("accept");

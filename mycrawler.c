@@ -1,14 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <strings.h>
+#include <netdb.h>
 
 int main(int argc,char** argv){
 	char* host_or_ip;
 	char* save_dir;
 	char* starting_URL;
-	int port,command_port,num_threads;
+	int port,command_port,num_threads,sock;
 	int i, found;
-	
+	unsigned int serverlen;
+	struct sockaddr_in server;
+	struct sockaddr *serverptr;
+	struct hostent *rem;
 	
 	if(argc == 12){
 		for(i=1;i<(argc-2);i++){
@@ -94,6 +103,27 @@ int main(int argc,char** argv){
 	}
 	else{
 		printf("Wrong number of arguments.\n");
+		return 1;
+	}
+	
+	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+		perror("socket");
+		return 1;
+	}
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	serverptr = (struct sockaddr *) &server;
+	serverlen = sizeof server;
+	if ((rem = gethostbyname(host_or_ip)) == NULL){
+		perror("gethostbyname");
+		return 1;
+	}
+	bcopy((char *) rem -> h_addr, (char *) &server.sin_addr,rem -> h_length);
+	server.sin_port = htons(port);
+	serverptr = (struct sockaddr *) &server;
+	serverlen = sizeof server;
+	if (connect(sock, serverptr, serverlen) < 0){
+		perror("connect");
 		return 1;
 	}
 	
