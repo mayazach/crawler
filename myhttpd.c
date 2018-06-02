@@ -9,7 +9,7 @@
 #define BUFFSIZE 256
 
 int main(int argc,char** argv){
-	int serving_port,command_port,num_threads,serving_sock,command_sock,csock;
+	int serving_port,command_port,num_threads,serving_sock,command_sock,csock,readsocks;
 	int i,found = 0,pages_served = 0,bytes_served = 0,index,mins_running;
 	double seconds_running;
 	char* root_dir;
@@ -19,6 +19,8 @@ int main(int argc,char** argv){
 	FILE *sock_fp;
 	char command_name[BUFFSIZE];
 	struct timeval  start, current;
+	fd_set socks;
+	int highsock = -1;
 	
 	if(argc == 9){
 		for(i=1;i<(argc-1);i++){
@@ -124,44 +126,71 @@ int main(int argc,char** argv){
 		perror( "listen" );
 		exit(1);
 	}
+	if ( listen(serving_sock, 5) != 0 ){
+		perror( "listen" );
+		exit(1);
+	}
+	
 	
 	while(1){
-		if ( (csock = accept(command_sock, NULL, NULL)) < 0 ){
-			perror("accept");
+		FD_ZERO(&socks);
+		FD_SET(serving_sock, &socks);
+		if(serving_sock > highsock)
+			highsock = serving_sock;
+		FD_SET(command_sock, &socks);
+		if(command_sock > highsock)
+			highsock = command_sock;
+		
+		readsocks = select(highsock+1, &socks, NULL, NULL, NULL);
+		if (readsocks < 0) {
+			perror("select");
 			return 1;
 		}
-		if ((sock_fp = fdopen(csock,"r+")) == NULL){
-			perror("fdopen");
-			return 1;
-		}
-		if (fgets(command_name, BUFFSIZE, sock_fp) == NULL){
-			perror("reading command");
-			return 1;
-		}
-		index = strlen(command_name) - 1;
-		while(index > 0){
-			if((command_name[index] == '\n') || (command_name[index] == '\r')){
-				command_name[index] = '\0';
-				index--;
+		else{
+			if(FD_ISSET(serving_sock, &socks))
+				if ( (csock = accept(command_sock, NULL, NULL)) < 0 ){
+					perror("accept");
+					return 1;
+				}
+			if(FD_ISSET(command_sock,&socks)){
+				if ( (csock = accept(command_sock, NULL, NULL)) < 0 ){
+					perror("accept");
+					return 1;
+				}
+				if ((sock_fp = fdopen(csock,"r+")) == NULL){
+					perror("fdopen");
+					return 1;
+				}
+				if (fgets(command_name, BUFFSIZE, sock_fp) == NULL){
+					perror("reading command");
+					return 1;
+				}
+				index = strlen(command_name) - 1;
+				while(index > 0){
+					if((command_name[index] == '\n') || (command_name[index] == '\r')){
+						command_name[index] = '\0';
+						index--;
+					}
+					else 
+						break;
+				}
+				if(!strcmp(command_name,"SHUTDOWN"))
+					break;
+				else if(!strcmp(command_name,"STATS")){
+					gettimeofday(&current, NULL);
+					seconds_running = (double) (current.tv_usec - start.tv_usec) / 1000000 + (double) (current.tv_sec - start.tv_sec);
+					mins_running = seconds_running / 60;
+					seconds_running -= mins_running * 60;
+					if(mins_running > 9)
+						printf("Server up for %d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
+					else
+						printf("Server up for 0%d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
+				}
+				else
+					printf("Unknown command\n");
+				fclose(sock_fp);
 			}
-			else 
-				break;
 		}
-		if(!strcmp(command_name,"SHUTDOWN"))
-			break;
-		else if(!strcmp(command_name,"STATS")){
-			gettimeofday(&current, NULL);
-			seconds_running = (double) (current.tv_usec - start.tv_usec) / 1000000 + (double) (current.tv_sec - start.tv_sec);
-			mins_running = seconds_running / 60;
-			seconds_running -= mins_running * 60;
-			if(mins_running > 9)
-				printf("Server up for %d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
-			else
-				printf("Server up for 0%d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
-		}
-		else
-			printf("Unknown command\n");
-		fclose(sock_fp);
 	}
 	
 	return 0;
