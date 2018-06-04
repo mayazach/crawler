@@ -7,19 +7,22 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/time.h>
+#include <errno.h>
 #define BUFFSIZE 1024
 
 int parse_request(int fp,char* buffer,char* root_dir);
 
+int send_request(int fp,int response_status);
+
 int main(int argc,char** argv){
 	int serving_port,command_port,num_threads,serving_sock,command_sock,csock,readsocks;
-	int i,found = 0,pages_served = 0,bytes_served = 0,index,mins_running;
+	int i,found = 0,pages_served = 0,bytes_served = 0,index,mins_running,response_status;
 	double seconds_running;
 	char* root_dir;
 	struct sockaddr_in server,command;
 	struct sockaddr *serverptr,*commandptr;
 	unsigned int serverlen, commandlen;
-	FILE *sock_fp;
+	FILE *sock_fp,*fp;
 	char command_name[128];
 	char buffer[BUFFSIZE];
 	struct timeval  start, current;
@@ -167,6 +170,17 @@ int main(int argc,char** argv){
 					continue;
 				}
 				printf("Got: %s\n",buffer);
+				if((fp = fopen(buffer,"r")) == NULL){
+					if(errno == ENOENT)
+						response_status = 404;
+					else if(errno == EACCES)
+						response_status = 403;
+					else
+						response_status = 404;
+				}
+				else
+					response_status = 200;
+				send_request(csock,response_status);
 			}
 			/**
 				Command socket
@@ -340,5 +354,25 @@ int parse_request(int fp,char* buffer,char* root_dir){
 	}
 	
 	strcpy(buffer,url);
+	return 0;
+}
+
+int send_request(int fp,int response_status){
+	char buffer[BUFFSIZE];
+	int length;
+	char temp;
+	char status[4];
+	
+	stpcpy(buffer,"HTTP/1.1 ");
+	sprintf(status, "%d", response_status);
+	strcat(buffer,status);
+	if(response_status == 200)
+		strcat(buffer," OK");
+	else if(response_status == 403)
+		strcat(buffer," Forbidden");
+	else if(response_status == 404)
+		strcat(buffer," Not Found");
+	printf("%s\n",buffer);
+	
 	return 0;
 }
