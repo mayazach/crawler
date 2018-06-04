@@ -7,18 +7,20 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/time.h>
-#define BUFFSIZE 256
+#define BUFFSIZE 1024
 
 int main(int argc,char** argv){
 	int serving_port,command_port,num_threads,serving_sock,command_sock,csock,readsocks;
-	int i,found = 0,pages_served = 0,bytes_served = 0,index,mins_running;
+	int i,found = 0,pages_served = 0,bytes_served = 0,index,mins_running,length;
 	double seconds_running;
 	char* root_dir;
 	struct sockaddr_in server,command;
 	struct sockaddr *serverptr,*commandptr;
 	unsigned int serverlen, commandlen;
 	FILE *sock_fp;
-	char command_name[BUFFSIZE];
+	char command_name[128];
+	char buffer[BUFFSIZE];
+	char temp,*word;
 	struct timeval  start, current;
 	fd_set socks;
 	int highsock = -1;
@@ -155,7 +157,30 @@ int main(int argc,char** argv){
 					perror("accept");
 					return 1;
 				}
-				puts("served");
+				if(read(csock,&temp,1) < 0){
+					puts("failed to read");
+					continue;
+				}
+				length = temp;
+				if(read(csock,buffer,length) < 0){
+					puts("failed to read");
+					continue;
+				}
+				printf("%s\n",buffer);
+				word = strtok(buffer," ");
+				if(strcmp(word,"GET")){
+					puts("Not a get request");
+					continue;
+				}
+				if(!(word = strtok(NULL," "))){
+					puts("URL missing");
+					continue;
+				}
+				if(!(word = strtok(NULL," ")) || strcmp(word,"HTTP/1.1")){
+					puts("Wrong request format");
+					continue;
+				}
+				puts("Got the request");
 			}
 			if(FD_ISSET(command_sock,&socks)){
 				if ( (csock = accept(command_sock, NULL, NULL)) < 0 ){
@@ -179,8 +204,10 @@ int main(int argc,char** argv){
 					else 
 						break;
 				}
-				if(!strcmp(command_name,"SHUTDOWN"))
+				if(!strcmp(command_name,"SHUTDOWN")){
+					fclose(sock_fp);
 					break;
+				}
 				else if(!strcmp(command_name,"STATS")){
 					gettimeofday(&current, NULL);
 					seconds_running = (double) (current.tv_usec - start.tv_usec) / 1000000 + (double) (current.tv_sec - start.tv_sec);

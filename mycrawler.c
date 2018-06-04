@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <strings.h>
 #include <netdb.h>
+#define BUFFSIZE 1024
 
 int main(int argc,char** argv){
 	char* host_or_ip;
@@ -18,6 +19,9 @@ int main(int argc,char** argv){
 	struct sockaddr_in server;
 	struct sockaddr *serverptr;
 	struct hostent *rem;
+	int length;
+	char temp;
+	char buffer[BUFFSIZE];
 	
 	if(argc == 12){
 		for(i=1;i<(argc-2);i++){
@@ -106,6 +110,10 @@ int main(int argc,char** argv){
 		return 1;
 	}
 	
+	stpcpy(buffer,"GET ");
+	strcat(buffer,starting_URL);
+	strcat(buffer," HTTP/1.1");
+	
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
 		perror("socket");
 		return 1;
@@ -126,6 +134,18 @@ int main(int argc,char** argv){
 		perror("connect");
 		return 1;
 	}
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(sock,&temp,1) < 0){
+		perror("write");
+		return 1;
+	}
+	if(write(sock,buffer,length) < 0){
+		perror("write");
+		return 1;
+	}
+	
+	
 	
 	return 0;
 }
