@@ -11,6 +11,8 @@
 
 int send_request(int fp,char* url);
 
+int parse_response(int fp);
+
 int main(int argc,char** argv){
 	char* host_or_ip;
 	char* save_dir;
@@ -134,6 +136,8 @@ int main(int argc,char** argv){
 	}
 	if(send_request(sock,starting_URL) < 0)
 		puts("Failed to get file");
+	if(parse_response(sock) < 0)
+		puts("Failed to read response");
 	
 	return 0;
 }
@@ -220,6 +224,70 @@ int send_request(int fp,char* url){
 	}
 	if(write(fp,buffer,length) < 0){
 		perror("write");
+		return -1;
+	}
+	
+	return 0;
+}
+
+int parse_response(int fp){
+	char* word;
+	char temp;
+	char buffer[BUFFSIZE];
+	int length;
+	
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
 		return -1;
 	}
 	

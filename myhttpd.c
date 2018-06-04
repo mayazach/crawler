@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/time.h>
+#include <time.h>
 #include <errno.h>
 #define BUFFSIZE 1024
 
@@ -169,7 +170,6 @@ int main(int argc,char** argv){
 					puts("Could not process request");
 					continue;
 				}
-				printf("Got: %s\n",buffer);
 				if((fp = fopen(buffer,"r")) == NULL){
 					if(errno == ENOENT)
 						response_status = 404;
@@ -362,6 +362,8 @@ int send_request(int fp,int response_status){
 	int length;
 	char temp;
 	char status[4];
+	time_t rawtime;
+	struct tm * timeinfo;
 	
 	stpcpy(buffer,"HTTP/1.1 ");
 	sprintf(status, "%d", response_status);
@@ -372,7 +374,86 @@ int send_request(int fp,int response_status){
 		strcat(buffer," Forbidden");
 	else if(response_status == 404)
 		strcat(buffer," Not Found");
-	printf("%s\n",buffer);
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer, "Date: ");
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+	strcat(buffer,asctime(timeinfo));
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer,"Server: myhttpd/1.0.0 (Ubuntu64)");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer,"Content-Length: 124");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer,"Content-Type: text/html");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer,"Connection: Closed");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer,"\n");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	
 	
 	return 0;
 }
