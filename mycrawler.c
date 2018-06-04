@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -11,13 +12,13 @@
 
 int send_request(int fp,char* url);
 
-int parse_response(int fp);
+int parse_response(int fp,char* filename);
 
 int main(int argc,char** argv){
 	char* host_or_ip;
 	char* save_dir;
 	char* starting_URL;
-	int port,command_port,num_threads,sock;
+	int port,command_port,num_threads,sock,response_status;
 	int i, found;
 	unsigned int serverlen;
 	struct sockaddr_in server;
@@ -134,10 +135,20 @@ int main(int argc,char** argv){
 		perror("connect");
 		return 1;
 	}
+	strcpy(buffer,save_dir);
+	strcat(buffer,starting_URL);
 	if(send_request(sock,starting_URL) < 0)
 		puts("Failed to get file");
-	if(parse_response(sock) < 0)
+	if((response_status = parse_response(sock,buffer)) < 0){
 		puts("Failed to read response");
+		return 1;
+	}
+	if(response_status == 403)
+		puts("Forbidden");
+	else if(response_status == 404)
+		puts("Not Found");
+	else
+		puts("OK");
 	
 	return 0;
 }
@@ -230,11 +241,13 @@ int send_request(int fp,char* url){
 	return 0;
 }
 
-int parse_response(int fp){
+int parse_response(int fp,char* filename){
 	char* word;
 	char temp;
 	char buffer[BUFFSIZE];
-	int length,status;
+	int length,status,i;
+	FILE* save_fp;
+	struct stat sb;
 	
 	if(read(fp,&temp,1) < 0){
 		puts("failed to read");
@@ -330,6 +343,23 @@ int parse_response(int fp){
 		puts("Could not read response");
 		return -1;
 	}
-	
-	return 0;
+	if(status == 200){
+		printf("%s\n",filename);
+		length = strlen(filename);
+		for(i=0;i<length;i++){
+			if(filename[i] == '/'){
+				strncpy(buffer,filename,i);
+				buffer[i] = '\0';
+				if (stat(buffer, &sb) != 0 || !S_ISDIR(sb.st_mode))
+					mkdir(buffer, 0777);
+			}
+		}
+		if((save_fp = fopen(filename,"w")) == NULL ){
+			return -1;
+		}
+		fclose(save_fp);
+		return status;
+	}
+	else
+		return status;
 }
