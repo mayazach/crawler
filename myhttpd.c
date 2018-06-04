@@ -251,7 +251,6 @@ int parse_request(int fp,char* buffer,char* root_dir){
 		puts("Wrong request format");
 		return -1;
 	}
-	
 	if(read(fp,&temp,1) < 0){
 		puts("failed to read");
 		return -1;
@@ -263,6 +262,75 @@ int parse_request(int fp,char* buffer,char* root_dir){
 	}
 	word = strtok(buffer," ");
 	if(strcmp(word,"User-Agent:")){
+		puts("Wrong request format");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Host:")){
+		puts("Wrong request format");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Accept-Language:")){
+		puts("Wrong request format");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Accept-Encoding:")){
+		puts("Wrong request format");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Connection:")){
+		puts("Wrong request format");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	if(strcmp(buffer,"\n")){
 		puts("Wrong request format");
 		return -1;
 	}

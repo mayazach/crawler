@@ -167,6 +167,61 @@ int send_request(int fp,char* url){
 		perror("write");
 		return -1;
 	}
+	strcpy(buffer, "Host: linux00.di.uoa.gr");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer, "Accept-Language: en-us");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer, "Accept-Encoding: gzip, deflate");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer, "Connection: Close");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
+	strcpy(buffer, "\n");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
 	
 	return 0;
 }
