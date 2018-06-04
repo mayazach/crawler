@@ -14,6 +14,7 @@ int send_request(int fp,char* url);
 
 int parse_response(int fp,char* filename);
 
+
 int main(int argc,char** argv){
 	char* host_or_ip;
 	char* save_dir;
@@ -245,7 +246,7 @@ int parse_response(int fp,char* filename){
 	char* word;
 	char temp;
 	char buffer[BUFFSIZE];
-	int length,status,i;
+	int length,status,i,bytes_to_read;
 	FILE* save_fp;
 	struct stat sb;
 	
@@ -338,6 +339,7 @@ int parse_response(int fp,char* filename){
 		puts("failed to read");
 		return -1;
 	}
+	printf("%s\n",buffer);
 	word = strtok(buffer," ");
 	if(strcmp(word,"Connection:")){
 		puts("Could not read response");
@@ -357,6 +359,34 @@ int parse_response(int fp,char* filename){
 		if((save_fp = fopen(filename,"w")) == NULL ){
 			return -1;
 		}
+		if(read(fp,&temp,1) < 0){
+			puts("failed to read");
+			return -1;
+		}
+		length = temp;
+		printf("%d\n",length);
+		if(read(fp,buffer,length) < 0){
+			puts("failed to read");
+			return -1;
+		}
+		printf("Reading: %s\n",buffer);
+		bytes_to_read = atoi(buffer);
+		printf("Reading: %d\n",bytes_to_read);
+		/*while(bytes_to_read > 0){
+			printf("%d\n",bytes_to_read);
+			if(read(fp,&temp,1) < 0){
+				puts("failed to read");
+				return -1;
+			}
+			length = temp;
+			if(read(fp,buffer,length) < 0){
+				puts("failed to read");
+				return -1;
+			}
+			for(i=0;i<length;i++)
+				fputc(buffer[i],save_fp);
+			bytes_to_read -= length;
+		}*/
 		fclose(save_fp);
 		return status;
 	}
@@ -370,6 +400,7 @@ int parse_response(int fp,char* filename){
 			puts("failed to read");
 			return -1;
 		}
+		printf("%s\n",buffer);
 		return status;
 	}
 }
