@@ -234,7 +234,7 @@ int parse_response(int fp){
 	char* word;
 	char temp;
 	char buffer[BUFFSIZE];
-	int length;
+	int length,status;
 	
 	if(read(fp,&temp,1) < 0){
 		puts("failed to read");
@@ -245,22 +245,19 @@ int parse_response(int fp){
 		puts("failed to read");
 		return -1;
 	}
-	if(read(fp,&temp,1) < 0){
-		puts("failed to read");
+	word = strtok(buffer," ");
+	if(strcmp(word,"HTTP/1.1")){
+		puts("Could not read response");
 		return -1;
 	}
-	length = temp;
-	if(read(fp,buffer,length) < 0){
-		puts("failed to read");
+	if(!(word = strtok(NULL," "))){
+		puts("Response status missing");
 		return -1;
 	}
-	if(read(fp,&temp,1) < 0){
-		puts("failed to read");
-		return -1;
-	}
-	length = temp;
-	if(read(fp,buffer,length) < 0){
-		puts("failed to read");
+	else
+		status = atoi(word);
+	if(!(word = strtok(NULL," "))){
+		puts("Could not read response");
 		return -1;
 	}
 	if(read(fp,&temp,1) < 0){
@@ -272,13 +269,9 @@ int parse_response(int fp){
 		puts("failed to read");
 		return -1;
 	}
-	if(read(fp,&temp,1) < 0){
-		puts("failed to read");
-		return -1;
-	}
-	length = temp;
-	if(read(fp,buffer,length) < 0){
-		puts("failed to read");
+	word = strtok(buffer," ");
+	if(strcmp(word,"Date:")){
+		puts("Could not read response");
 		return -1;
 	}
 	if(read(fp,&temp,1) < 0){
@@ -288,6 +281,53 @@ int parse_response(int fp){
 	length = temp;
 	if(read(fp,buffer,length) < 0){
 		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Server:")){
+		puts("Could not read response");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Content-Length:")){
+		puts("Could not read response");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Content-Type:")){
+		puts("Could not read response");
+		return -1;
+	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"Connection:")){
+		puts("Could not read response");
 		return -1;
 	}
 	
