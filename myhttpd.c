@@ -13,7 +13,7 @@
 
 int parse_request(int fp,char* buffer,char* root_dir);
 
-int send_request(int fp,int response_status);
+int send_response(int fp,int response_status);
 
 int main(int argc,char** argv){
 	int serving_port,command_port,num_threads,serving_sock,command_sock,csock,readsocks;
@@ -180,7 +180,7 @@ int main(int argc,char** argv){
 				}
 				else
 					response_status = 200;
-				send_request(csock,response_status);
+				send_response(csock,response_status);
 			}
 			/**
 				Command socket
@@ -357,7 +357,7 @@ int parse_request(int fp,char* buffer,char* root_dir){
 	return 0;
 }
 
-int send_request(int fp,int response_status){
+int send_response(int fp,int response_status){
 	char buffer[BUFFSIZE];
 	int length;
 	char temp;
@@ -452,6 +452,33 @@ int send_request(int fp,int response_status){
 	if(write(fp,buffer,length) < 0){
 		perror("write");
 		return -1;
+	}
+	
+	if(response_status == 403){
+		strcpy(buffer,"<html>Trying to access this file but I don't think I can make it.</html>");
+		length=strlen(buffer) + 1;
+		temp = length;
+		if(write(fp,&temp,1) < 0){
+			perror("write");
+			return -1;
+		}
+		if(write(fp,buffer,length) < 0){
+			perror("write");
+			return -1;
+		}
+	}
+	else if(response_status == 404){
+		strcpy(buffer,"<html>Sorry dude, couldn't find this file.</html>");
+		length=strlen(buffer) + 1;
+		temp = length;
+		if(write(fp,&temp,1) < 0){
+			perror("write");
+			return -1;
+		}
+		if(write(fp,buffer,length) < 0){
+			perror("write");
+			return -1;
+		}
 	}
 	
 	

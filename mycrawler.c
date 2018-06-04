@@ -360,6 +360,16 @@ int parse_response(int fp,char* filename){
 		fclose(save_fp);
 		return status;
 	}
-	else
+	else{
+		if(read(fp,&temp,1) < 0){
+			puts("failed to read");
+			return -1;
+		}
+		length = temp;
+		if(read(fp,buffer,length) < 0){
+			puts("failed to read");
+			return -1;
+		}
 		return status;
+	}
 }
