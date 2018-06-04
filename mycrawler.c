@@ -9,6 +9,8 @@
 #include <netdb.h>
 #define BUFFSIZE 1024
 
+int send_request(int fp,char* url);
+
 int main(int argc,char** argv){
 	char* host_or_ip;
 	char* save_dir;
@@ -110,10 +112,6 @@ int main(int argc,char** argv){
 		return 1;
 	}
 	
-	stpcpy(buffer,"GET ");
-	strcat(buffer,starting_URL);
-	strcat(buffer," HTTP/1.1");
-	
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
 		perror("socket");
 		return 1;
@@ -134,18 +132,41 @@ int main(int argc,char** argv){
 		perror("connect");
 		return 1;
 	}
+	if(send_request(sock,starting_URL) < 0)
+		puts("Failed to get file");
+	
+	return 0;
+}
+
+int send_request(int fp,char* url){
+	char buffer[BUFFSIZE];
+	int length;
+	char temp;
+	
+	stpcpy(buffer,"GET ");
+	strcat(buffer,url);
+	strcat(buffer," HTTP/1.1");
 	length=strlen(buffer) + 1;
 	temp = length;
-	if(write(sock,&temp,1) < 0){
+	if(write(fp,&temp,1) < 0){
 		perror("write");
-		return 1;
+		return -1;
 	}
-	if(write(sock,buffer,length) < 0){
+	if(write(fp,buffer,length) < 0){
 		perror("write");
-		return 1;
+		return -1;
 	}
-	
-	
+	strcpy(buffer, "User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)");
+	length=strlen(buffer) + 1;
+	temp = length;
+	if(write(fp,&temp,1) < 0){
+		perror("write");
+		return -1;
+	}
+	if(write(fp,buffer,length) < 0){
+		perror("write");
+		return -1;
+	}
 	
 	return 0;
 }

@@ -9,9 +9,11 @@
 #include <sys/time.h>
 #define BUFFSIZE 1024
 
+int parse_request(int fp,char* buffer,char* root_dir);
+
 int main(int argc,char** argv){
 	int serving_port,command_port,num_threads,serving_sock,command_sock,csock,readsocks;
-	int i,found = 0,pages_served = 0,bytes_served = 0,index,mins_running,length;
+	int i,found = 0,pages_served = 0,bytes_served = 0,index,mins_running;
 	double seconds_running;
 	char* root_dir;
 	struct sockaddr_in server,command;
@@ -20,7 +22,6 @@ int main(int argc,char** argv){
 	FILE *sock_fp;
 	char command_name[128];
 	char buffer[BUFFSIZE];
-	char temp,*word;
 	struct timeval  start, current;
 	fd_set socks;
 	int highsock = -1;
@@ -151,37 +152,25 @@ int main(int argc,char** argv){
 			return 1;
 		}
 		else{
+			/**
+				Client socket
+			**/
 			if(FD_ISSET(serving_sock, &socks)){
 				puts("serving sock");
 				if ( (csock = accept(serving_sock, NULL, NULL)) < 0 ){
 					perror("accept");
 					return 1;
 				}
-				if(read(csock,&temp,1) < 0){
-					puts("failed to read");
+				
+				if(parse_request(csock,buffer,root_dir) < 0){
+					puts("Could not process request");
 					continue;
 				}
-				length = temp;
-				if(read(csock,buffer,length) < 0){
-					puts("failed to read");
-					continue;
-				}
-				printf("%s\n",buffer);
-				word = strtok(buffer," ");
-				if(strcmp(word,"GET")){
-					puts("Not a get request");
-					continue;
-				}
-				if(!(word = strtok(NULL," "))){
-					puts("URL missing");
-					continue;
-				}
-				if(!(word = strtok(NULL," ")) || strcmp(word,"HTTP/1.1")){
-					puts("Wrong request format");
-					continue;
-				}
-				puts("Got the request");
+				printf("Got: %s\n",buffer);
 			}
+			/**
+				Command socket
+			**/
 			if(FD_ISSET(command_sock,&socks)){
 				if ( (csock = accept(command_sock, NULL, NULL)) < 0 ){
 					perror("accept");
@@ -214,9 +203,9 @@ int main(int argc,char** argv){
 					mins_running = seconds_running / 60;
 					seconds_running -= mins_running * 60;
 					if(mins_running > 9)
-						printf("Server up for %d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
+						fprintf(sock_fp,"Server up for %d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
 					else
-						printf("Server up for 0%d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
+						fprintf(sock_fp,"Server up for 0%d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
 				}
 				else
 					printf("Unknown command\n");
@@ -224,6 +213,60 @@ int main(int argc,char** argv){
 			}
 		}
 	}
+	close(command_sock);
+	close(serving_sock);
 	
+	return 0;
+}
+
+int parse_request(int fp,char* buffer,char* root_dir){
+	char* word;
+	char temp;
+	char url[BUFFSIZE];
+	int length;
+	
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"GET")){
+		puts("Not a get request");
+		return -1;
+	}
+	if(!(word = strtok(NULL," "))){
+		puts("URL missing");
+		return -1;
+	}
+	else{
+		strcpy(url,root_dir);
+		strcat(url,word);
+	}
+	if(!(word = strtok(NULL," ")) || strcmp(word,"HTTP/1.1")){
+		puts("Wrong request format");
+		return -1;
+	}
+	
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	word = strtok(buffer," ");
+	if(strcmp(word,"User-Agent:")){
+		puts("Wrong request format");
+		return -1;
+	}
+	
+	strcpy(buffer,url);
 	return 0;
 }
