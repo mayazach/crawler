@@ -202,10 +202,14 @@ int main(int argc,char** argv){
 					seconds_running = (double) (current.tv_usec - start.tv_usec) / 1000000 + (double) (current.tv_sec - start.tv_sec);
 					mins_running = seconds_running / 60;
 					seconds_running -= mins_running * 60;
-					if(mins_running > 9)
-						fprintf(sock_fp,"Server up for %d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
+					if(mins_running >= 10)
+						fprintf(sock_fp,"Server up for %d:", mins_running);
 					else
-						fprintf(sock_fp,"Server up for 0%d:%f, served %d pages, %d bytes\n", mins_running,seconds_running,pages_served,bytes_served);
+						fprintf(sock_fp,"Server up for 0%d:", mins_running);
+					if(seconds_running >= 10)
+						fprintf(sock_fp,"%f, served %d pages, %d bytes\n",seconds_running,pages_served,bytes_served);
+					else
+						fprintf(sock_fp,"0%f, served %d pages, %d bytes\n",seconds_running,pages_served,bytes_served);
 				}
 				else
 					printf("Unknown command\n");
