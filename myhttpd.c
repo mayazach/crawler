@@ -184,6 +184,7 @@ int main(int argc,char** argv){
 				else
 					response_status = 200;
 				if(send_response(csock,response_status) == 0 && response_status == 200){
+					send_file(csock,fp);
 					fclose(fp);
 				}
 				
@@ -489,9 +490,10 @@ int send_response(int fp,int response_status){
 	return 0;
 }
 
-/*void send_file(int sock_fp,FILE* fp){
+void send_file(int sock_fp,FILE* fp){
 	struct stat file_stat;
 	char buffer[BUFFSIZE];
+	char sizebuf[10];
 	int bytes_to_transfer,length;
 	char temp;
 	
@@ -501,8 +503,7 @@ int send_response(int fp,int response_status){
     }
 	bytes_to_transfer = file_stat.st_size;
 	printf("Transferring: %d\n",(int) bytes_to_transfer);
-	//sprintf(buffer,"%d",(int) bytes_to_transfer);
-	strcpy(buffer,"Hello!");
+	sprintf(buffer,"%d",(int) bytes_to_transfer);
 	printf("%s\n",buffer);
 	length=strlen(buffer) + 1;
 	temp = length;
@@ -515,7 +516,7 @@ int send_response(int fp,int response_status){
 		perror("write");
 		exit(EXIT_FAILURE);
 	}
-	/*while(bytes_to_transfer > 0){
+	while(bytes_to_transfer > 0){
 		printf("%d\n",bytes_to_transfer);
 		if(bytes_to_transfer > BUFFSIZE){
 			fgets(buffer,BUFFSIZE,fp);
@@ -524,18 +525,26 @@ int send_response(int fp,int response_status){
 		}
 		else{
 			fgets(buffer,bytes_to_transfer,fp);
-			bytes_to_transfer = 0;
 			length = bytes_to_transfer;
+			bytes_to_transfer = 0;
 		}
+		sprintf(sizebuf,"%d",length);
+		length=strlen(sizebuf) + 1;
 		temp = length;
 		if(write(sock_fp,&temp,1) < 0){
 			perror("write");
 			exit(EXIT_FAILURE);
 		}
+		if(write(sock_fp,sizebuf,length) < 0){
+			perror("write");
+			exit(EXIT_FAILURE);
+		}
+		length = atoi(sizebuf);
+		printf("%d\n",length);
 		if(write(sock_fp,buffer,length) < 0){
 			perror("write");
 			exit(EXIT_FAILURE);
 		}
-	}*/
+	}
 	
-//}
+}

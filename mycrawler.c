@@ -345,6 +345,15 @@ int parse_response(int fp,char* filename){
 		puts("Could not read response");
 		return -1;
 	}
+	if(read(fp,&temp,1) < 0){
+		puts("failed to read");
+		return -1;
+	}
+	length = temp;
+	if(read(fp,buffer,length) < 0){
+		puts("failed to read");
+		return -1;
+	}
 	if(status == 200){
 		printf("%s\n",filename);
 		length = strlen(filename);
@@ -364,16 +373,13 @@ int parse_response(int fp,char* filename){
 			return -1;
 		}
 		length = temp;
-		printf("%d\n",length);
 		if(read(fp,buffer,length) < 0){
 			puts("failed to read");
 			return -1;
 		}
-		printf("Reading: %s\n",buffer);
 		bytes_to_read = atoi(buffer);
 		printf("Reading: %d\n",bytes_to_read);
-		/*while(bytes_to_read > 0){
-			printf("%d\n",bytes_to_read);
+		while(bytes_to_read > 0){
 			if(read(fp,&temp,1) < 0){
 				puts("failed to read");
 				return -1;
@@ -383,10 +389,15 @@ int parse_response(int fp,char* filename){
 				puts("failed to read");
 				return -1;
 			}
+			length = atoi(buffer);
+			if(read(fp,buffer,length) < 0){
+				puts("failed to read");
+				return -1;
+			}
 			for(i=0;i<length;i++)
 				fputc(buffer[i],save_fp);
 			bytes_to_read -= length;
-		}*/
+		}
 		fclose(save_fp);
 		return status;
 	}
@@ -400,7 +411,6 @@ int parse_response(int fp,char* filename){
 			puts("failed to read");
 			return -1;
 		}
-		printf("%s\n",buffer);
 		return status;
 	}
 }
