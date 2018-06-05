@@ -394,9 +394,10 @@ int parse_response(int fp,char* filename){
 				puts("failed to read");
 				return -1;
 			}
-			for(i=0;i<length;i++)
-				fputc(buffer[i],save_fp);
+			buffer[length] = '\0';
+			fprintf(save_fp,"%s", buffer);
 			bytes_to_read -= length;
+			printf("%s",buffer);
 		}
 		fclose(save_fp);
 		return status;

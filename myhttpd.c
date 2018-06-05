@@ -504,10 +504,8 @@ void send_file(int sock_fp,FILE* fp){
 	bytes_to_transfer = file_stat.st_size;
 	printf("Transferring: %d\n",(int) bytes_to_transfer);
 	sprintf(buffer,"%d",(int) bytes_to_transfer);
-	printf("%s\n",buffer);
 	length=strlen(buffer) + 1;
 	temp = length;
-	printf("%d\n",length);
 	if(write(sock_fp,&temp,1) < 0){
 		perror("write");
 		exit(EXIT_FAILURE);
@@ -517,11 +515,10 @@ void send_file(int sock_fp,FILE* fp){
 		exit(EXIT_FAILURE);
 	}
 	while(bytes_to_transfer > 0){
-		printf("%d\n",bytes_to_transfer);
-		if(bytes_to_transfer > BUFFSIZE){
-			fgets(buffer,BUFFSIZE,fp);
-			bytes_to_transfer-=BUFFSIZE;
-			length = BUFFSIZE;
+		if(bytes_to_transfer > BUFFSIZE-1){
+			fgets(buffer,BUFFSIZE-1,fp);
+			bytes_to_transfer-=(BUFFSIZE - 1);
+			length = BUFFSIZE - 1;
 		}
 		else{
 			fgets(buffer,bytes_to_transfer,fp);
@@ -540,11 +537,12 @@ void send_file(int sock_fp,FILE* fp){
 			exit(EXIT_FAILURE);
 		}
 		length = atoi(sizebuf);
-		printf("%d\n",length);
 		if(write(sock_fp,buffer,length) < 0){
 			perror("write");
 			exit(EXIT_FAILURE);
 		}
+		buffer[length] = '\0';
+		printf("%s\n",buffer);
 	}
 	
 }
