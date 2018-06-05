@@ -108,6 +108,9 @@ int parse_request(int fp,char* buffer,char* root_dir){
 	char url[BUFFSIZE];
 	int length;
 	
+	/**
+		Check request format
+	**/
 	if(read(fp,&temp,1) < 0){
 		puts("failed to read");
 		return -1;
@@ -127,6 +130,7 @@ int parse_request(int fp,char* buffer,char* root_dir){
 		return -1;
 	}
 	else{
+		//Save file path
 		strcpy(url,root_dir);
 		strcat(url,word);
 	}
@@ -355,11 +359,13 @@ void send_file(int sock_fp,FILE* fp){
 	int bytes_to_transfer,length;
 	char temp;
 	
+	//Find file size in bytes
 	if (fstat(fileno(fp), &file_stat) < 0){
         perror("fstat");
 		exit(EXIT_FAILURE);
     }
 	bytes_to_transfer = file_stat.st_size;
+	//Send number of bytes to be transferred to client
 	printf("Transferring: %d\n",(int) bytes_to_transfer);
 	sprintf(buffer,"%d",(int) bytes_to_transfer);
 	length=strlen(buffer) + 1;
@@ -372,6 +378,7 @@ void send_file(int sock_fp,FILE* fp){
 		perror("write");
 		exit(EXIT_FAILURE);
 	}
+	//Send file
 	while(bytes_to_transfer > 0){
 		if(bytes_to_transfer > BUFFSIZE-1){
 			fgets(buffer,BUFFSIZE-1,fp);
@@ -411,6 +418,7 @@ int parse_response(int fp,char* filename){
 	FILE* save_fp;
 	struct stat sb;
 	
+	//Check response headers
 	if(read(fp,&temp,1) < 0){
 		puts("failed to read");
 		return -1;
@@ -516,6 +524,7 @@ int parse_response(int fp,char* filename){
 		return -1;
 	}
 	if(status == 200){
+		//Create directories to save file if they don't exist
 		printf("%s\n",filename);
 		length = strlen(filename);
 		for(i=0;i<length;i++){
@@ -529,6 +538,7 @@ int parse_response(int fp,char* filename){
 		if((save_fp = fopen(filename,"w")) == NULL ){
 			return -1;
 		}
+		//Read and save file
 		if(read(fp,&temp,1) < 0){
 			puts("failed to read");
 			return -1;

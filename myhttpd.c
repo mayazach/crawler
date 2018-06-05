@@ -28,6 +28,9 @@ int main(int argc,char** argv){
 	fd_set socks;
 	int highsock = -1;
 	
+	/**
+		Checking command line arguments
+	**/
 	if(argc == 9){
 		for(i=1;i<(argc-1);i++){
 			if(!strcmp(argv[i],"-p")){
@@ -97,9 +100,12 @@ int main(int argc,char** argv){
 		printf("Wrong number of arguments.\n");
 		return 1;
 	}
+	//Get start time
 	gettimeofday(&start, NULL);
 
-	
+	/**
+		Preparing sockets for serving client and receiving commands
+	**/
 	if ((serving_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("server socket");
 		exit(-1);
@@ -139,6 +145,9 @@ int main(int argc,char** argv){
 	
 	
 	while(1){
+		/**
+			select() to get requests from both sockets
+		**/
 		highsock = -1;
 		FD_ZERO(&socks);
 		FD_SET(serving_sock, &socks);
@@ -200,6 +209,7 @@ int main(int argc,char** argv){
 					perror("reading command");
 					return 1;
 				}
+				//Removing newlines from command
 				index = strlen(command_name) - 1;
 				while(index > 0){
 					if((command_name[index] == '\n') || (command_name[index] == '\r')){

@@ -25,6 +25,9 @@ int main(int argc,char** argv){
 	char temp;
 	char buffer[BUFFSIZE];
 	
+	/**
+		Checking command line arguments
+	**/
 	if(argc == 12){
 		for(i=1;i<(argc-2);i++){
 			if(!strcmp(argv[i],"-h")){
@@ -112,6 +115,9 @@ int main(int argc,char** argv){
 		return 1;
 	}
 	
+	/**
+		Sending request for file
+	**/
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
 		perror("socket");
 		return 1;
